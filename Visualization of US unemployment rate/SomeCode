@@ -1,0 +1,53 @@
+import shapefile
+import shapely.geometry as geometry
+import matplotlib as mpl
+import matplotlib.cm as cm
+from matplotlib import pyplot as plt
+from matplotlib.patches import Polygon
+from matplotlib.colors import rgb2hex
+from mpl_toolkits.basemap import Basemap
+
+import pandas as pd
+fig=plt.figure(figsize=(10,10))
+
+mmap=Basemap(projection='lcc',lat_0=90,lon_0=-105, llcrnrlat=23.41 ,urcrnrlat=45.44,
+             llcrnrlon=-118.67,urcrnrlon=-64.52)
+mmap.readshapefile("D:\个人\学习\大三下\数据可视化\实验\实验5\countyp010",'us',drawbounds=True)
+
+#读取表格
+u_data=pd.read_csv('D:\个人\学习\大三下\数据可视化\实验\实验5\SimpleData.csv',usecols=['countyID','unemploymentRate'])
+u_data.head()
+
+#上色
+#色条
+norm=mpl.colors.Normalize(vmin=0,vmax=31)
+m=cm.ScalarMappable(norm=norm,cmap=cm.viridis)
+
+ax = plt.gca()
+
+for id_,shape in zip(mmap.us_info,mmap.us):
+    for id_c,rate in zip(u_data['countyID'],u_data['unemploymentRate']):
+        if(int(str(id_['FIPS']))==id_c):
+            color = m.to_rgba(rate)
+            poly = Polygon(shape, facecolor=color)
+            ax.add_patch(poly)
+            break
+plt.colorbar(m);
+
+ #鼠标交互事件
+def mouse_enter(event):
+    print(event.xdata,event.ydata)
+    mouse_point=(event.xdata,event.ydata)
+    for mouse_shape_info,mouse_shape in zip(mmap.us_info,mmap.us):
+        if geometry.Point(mouse_point).within(geometry.shape(mouse_shape)):
+            print('22')
+    '''
+    for shape_info,shape_shape in zip(mmap.us_info,mmap.us):
+        if shape_shape.contains(event)[0]==True:
+            poly=Polygon(shape_shape,facecolor='#ff8742',edgecolor='w')
+            ax.add_patch(poly)   
+'''
+
+fig.canvas.mpl_connect('button_press_event',mouse_enter)
+fig.show()
+
