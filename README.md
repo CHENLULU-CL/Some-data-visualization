@@ -12,5 +12,3 @@ These are some data visualization tasks.
 <p align="center">
 <img src="https://github.com/CHENLULU-CL/Some-data-visualization/blob/main/Figs/2.gif"  width=60%>
 </p>
-
-## Movie data visualization
