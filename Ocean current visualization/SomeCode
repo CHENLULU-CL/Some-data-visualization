@@ -1,0 +1,50 @@
+from matplotlib import pyplot as plt
+from mpl_toolkits.basemap import Basemap
+import numpy as np
+import scipy.io as scio
+from matplotlib import animation
+
+fig=plt.figure(figsize=(8,5))
+ax = plt.gca()
+matpath='drifter_annualmeans.mat'
+data_all=scio.loadmat(matpath)
+lon=data_all['Lon']
+lat=data_all['Lat']
+U=data_all['U']
+V=data_all['V']
+
+#地图背景
+map = Basemap()
+def drawmap():
+    map.drawcoastlines()
+    map.drawmapboundary(fill_color='#5EA9BC')
+    map.fillcontinents(color='#FFDDD3', lake_color='#9ACDDE')  # 画大洲，颜色填充为白色
+    # 显示经纬度
+    parallels = np.arange(-90., 90., 10.)
+    map.drawparallels(parallels, labels=[False, True, True, False], color='#FDF9E0', linewidth=0.5)  # 画纬度
+    meridians = np.arange(-180., 180., 20.)
+    map.drawmeridians(meridians, labels=[True, False, False, True], linewidth=0.5, color='#FDF9E0')  # 画经度
+
+print()
+X,Y=np.meshgrid(lon,lat)
+speed = np.sqrt(U*U + V*V)
+speed=speed*5
+
+###动画
+def init():
+    ax.cla()
+    drawmap()
+    strm = ax.streamplot(X, Y, U, V, arrowsize=0.6,
+                          color=speed, linewidth=speed, cmap='viridis', density=0.2)
+    fig.colorbar(strm.lines)
+
+def animat(frame):
+    ax.cla()
+    drawmap()
+    ax.streamplot(X, Y, U, V, arrowsize=0.6,
+                             color=speed, linewidth=speed, cmap='viridis', density=frame)
+    print(frame)
+
+anim=animation.FuncAnimation(fig,animat,frames=np.arange(0.2,5,0.2),interval=500,
+                             cache_frame_data=False,init_func=init())
+plt.show()
